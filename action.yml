@@ -80,6 +80,33 @@
           COV_USER: ${{ inputs.coverity_user }}
           COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
+      # Always run either a full build or auto-capture. A partial capture is possible for incremetnal analysis,
+      # but this will impact the results further. For C/C++ and large Java projects however this may be required
+      # and is left as an exercise to the reader.
+      - name: Coverity Auto Capture
+        if: ${{ inputs.build_command }} == ""
+        shell: bash
+        run: |
+          echo
+          echo ========================================================================================
+          echo == Run Coverity AUTO Capture
+          echo ========================================================================================
+          echo
+          echo EXEC: cov-capture --dir idir --project-dir .
+          cov-capture --dir idir --project-dir .
+
+      - name: Coverity Build Capture
+        if: ${{ inputs.build_command }} != ""
+        shell: bash
+        run: |
+          echo
+          echo ========================================================================================
+          echo == Run Coverity BUILD Capture: ${{ inputs.build_command }}
+          echo ========================================================================================
+          echo
+          echo EXEC: cov-build --dir idir ${{ inputs.build_command }}
+          cov-build --dir idir ${{ inputs.build_command }}
+
       # On pushes to a main branch, run a Full Coverity analysis using auto
       # capture. This will scan the filesystem to determine what kind of
       # project(s) are present and how to capture them for analysis.
@@ -101,8 +128,6 @@
           echo
           echo EXEC: COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
-          echo EXEC: cov-capture --dir idir --project-dir .
-          cov-capture --dir idir --project-dir .
           echo EXEC: cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }}
           cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }}
           echo EXEC: cov-commit-defects --dir idir --ticker-mode none --url ${{ inputs.coverity_url }} --on-new-cert trust --stream \
@@ -154,8 +179,6 @@
             echo ${changed_file} >> coverity-files-to-scan.txt
             echo "Scan changed file ${changed_file}."
           done
-          echo EXEC: cov-capture --dir idir --project-dir .
-          cov-capture --dir idir --project-dir .
           echo EXEC: cov-run-desktop --dir idir --strip-path `pwd` --url ${{ inputs.coverity_url }} --stream $COVERITY_STREAM_NAME --present-in-reference false \
             --ignore-uncapturable-inputs true \
             --json-output-v7 coverity-results.json \
