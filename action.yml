@@ -157,9 +157,6 @@
           coverity-username: ${{ inputs.coverity_user }}
           coverity-password: ${{ inputs.coverity_passphrase }}
 
-
-dirname `which cov-analyze`
-
       # Generate SARIF using Coverity's built-in tool. Note that this is not
       # included in the regular Coverity PATH, so the full path must be
       # specified here.
