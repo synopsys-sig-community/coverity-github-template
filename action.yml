@@ -154,8 +154,8 @@
           # in the pull request.
           coverity-url: ${{ inputs.coverity_url }}
           coverity-project-name: ${{ github.event.repository.name }}
-          coverity-username: ${{ secrets.COVERITY_USER }}
-          coverity-password: ${{ secrets.COVERITY_PASSPHRASE }}
+          coverity-username: ${{ inputs.coverity_user }}
+          coverity-password: ${{ inputs.coverity_passphrase }}
 
 
 dirname `which cov-analyze`
