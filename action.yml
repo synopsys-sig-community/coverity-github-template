@@ -8,7 +8,7 @@
       coverity_user:
         description: "Coverity Connect user with permission to create streams and commit results"
         required: true
-      coverity_password:
+      coverity_passphrase:
         description: "Coverity Connect user password"
         required: true
       build_command:
@@ -69,7 +69,7 @@
           cov-manage-im --url ${{ inputs.coverity_url }} --on-new-cert trust --mode projects --update --name "$COVERITY_PROJECT_NAME" --insert stream:"$COVERITY_STREAM_NAME"
         env:
           COV_USER: ${{ inputs.coverity_user }}
-          COVERITY_PASSPHRASE: ${{ inputs.coverity_password }}
+          COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
       # On pushes to a main branch, run a Full Coverity analysis using auto
       # capture. This will scan the filesystem to determine what kind of
@@ -92,7 +92,7 @@
           cov-format-errors --dir idir --json-output-v7 coverity-results.json
         env:
           COV_USER: ${{ inputs.coverity_user }}
-          COVERITY_PASSPHRASE: ${{ inputs.coverity_password }}
+          COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
       # Use the helpful third party Jitterbit Get Changed Files action to
       # determine what files have been added or modified.
@@ -135,7 +135,7 @@
         env:
           BASE_BRANCH: ${{ github.base_ref }}
           COV_USER: ${{ inputs.coverity_user }}
-          COVERITY_PASSPHRASE: ${{ inputs.coverity_password }}
+          COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
       # The coverity-report-output-v7-json action will take the results
       # from Coverity and present them as review feedback on pull request.
@@ -201,7 +201,7 @@ dirname `which cov-analyze`
           fi
         env:
           COV_USER: ${{ inputs.coverity_user }}
-          COVERITY_PASSPHRASE: ${{ inputs.coverity_password }}
+          COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
       # For a pull request, until the GitHub action supports this, we
       # will run a preview commit and check how many newly introduced
@@ -222,7 +222,7 @@ dirname `which cov-analyze`
         env:
           BASE_BRANCH: ${{ github.base_ref }}
           COV_USER: ${{ inputs.coverity_user }}
-          COVERITY_PASSPHRASE: ${{ inputs.coverity_password }}
+          COVERITY_PASSPHRASE: ${{ inputs.coverity_passphrase }}
 
       - uses: ouzi-dev/commit-status-updater@v1.1.0
         with:
