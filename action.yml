@@ -59,7 +59,11 @@
         if: ${{github.event_name == 'push'}}
         shell: bash
         run: |
-          env
+          echo
+          echo ========================================================================================
+          echo == Initialize Coverity project and stream
+          echo ========================================================================================
+          echo
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
           export COVERITY_PROJECT_NAME=${GITHUB_REPOSITORY##*/}
           echo Ensure that project "$COVERITY_PROJECT_NAME" exists
@@ -85,6 +89,11 @@
         if: ${{github.event_name == 'push'}}
         shell: bash
         run: |
+          echo
+          echo ========================================================================================
+          echo == Run FULL Coverity analysis for ${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
+          echo ========================================================================================
+          echo
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
           cov-capture --dir idir --project-dir .
           cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }}
@@ -122,6 +131,11 @@
         if: ${{github.event_name == 'pull_request'}}
         shell: bash
         run: |
+          echo
+          echo ========================================================================================
+          echo == Run INCREMENTAL Coverity analysis for ${GITHUB_REPOSITORY##*/}-$BASE_BRANCH
+          echo ========================================================================================
+          echo
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-$BASE_BRANCH
           for changed_file in ${{ steps.changeset.outputs.added_modified }}; do
             echo ${changed_file} >> coverity-files-to-scan.txt
@@ -168,9 +182,14 @@
       - name: Export Coverity Results to SARIF
         shell: bash
         run: |
+          echo
+          echo ========================================================================================
+          echo == Generate SARIF for Coverity results
+          echo ========================================================================================
+          echo
           COV_ANALYZE_PATH=`which cov-analyze`
           COVERITY_HOME=`dirname $COV_ANALYZE_PATH`
-          node $COVERITY_HOME/SARIF/cov-format-sarif-for-github.js \
+          node $COVERITY_HOME/../SARIF/cov-format-sarif-for-github.js \
             --inputFile coverity-results.json \
             --repoName $GITHUB_REPOSITORY \
             --checkoutPath $GITHUB_REPOSITORY `pwd` $GITHUB_SHA \
@@ -183,11 +202,16 @@
           sarif_file: synopsys-coverity-github-sarif.json
 
       - name: Coverity Security Gate (Full analysis)
-        if: ${{github.event_name == 'push'}}
+        if: ${{github.event_name == 'push'}} and ${{ inputs.security_gate_view }} != ""
         shell: bash
         run: |
+          echo
+          echo ========================================================================================
+          echo == Check security gate for project ${GITHUB_REPOSITORY##*/}: $SECURITY_GATE_VIEW
+          echo ========================================================================================
+          echo
           COVERITY_PROJECT_NAME=${GITHUB_REPOSITORY##*/}
-          COVERITY_VIEW_ESCAPED=`jq -rn --arg x "$SECURITY_GATE_VIEW" '$x|@uri'`
+          COVERITY_VIEW_ESCAPED=`jq -rn --arg x "${{ inputs.security_gate_view }}" '$x|@uri'`
           curl -kfLsS --user $COV_USER:$COVERITY_PASSPHRASE ${{ inputs.coverity_url }}/api/viewContents/issues/v1/$COVERITY_VIEW_ESCAPED?projectId=$COVERITY_PROJECT_NAME > security-gate-results.json
           if [ $(cat security-gate-results.json | jq .viewContentsV1.totalRows) -ne 0 ]; then
             echo Security gate found policy violations
@@ -208,6 +232,11 @@
         if: ${{github.event_name == 'pull_request'}}
         shell: bash
         run: |
+          echo
+          echo ========================================================================================
+          echo == Check security gate for local analysis results
+          echo ========================================================================================
+          echo
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-$BASE_BRANCH
           cov-commit-defects --dir idir --security-file coverity-license.dat --url ${{ inputs.coverity_url }} --preview-report-v2 preview-report.json --stream ${COVERITY_STREAM_NAME}
           NUM_NEW_DEFECTS=`cat preview-report.json | jq -re .issueInfo[].presentInComparisonSnapshot | grep false | wc -l`
