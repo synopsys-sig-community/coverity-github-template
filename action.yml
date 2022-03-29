@@ -14,6 +14,12 @@
       build_command:
         description: "Optional build command - if not specified, auto capture will be used"
         required: false
+      cov_build_options:
+        description: "Optional command line options for cov-build"
+        required: false
+      cov_analyze_options:
+        description: "Optional command line arguments for cov-analyze"
+        required: false
       security_gate_view:
         description: "Name of saved view in Coverity Connect to use for security gate"
         required: false
@@ -100,21 +106,9 @@
             echo == Run Coverity BUILD Capture: ${{ inputs.build_command }}
             echo ========================================================================================
             echo
-            echo EXEC: cov-build --dir idir ${{ inputs.build_command }}
-            cov-build --dir idir ${{ inputs.build_command }}
+            echo EXEC: cov-build --dir idir ${{ inputs.build_command }} ${{ inputs.cov_build_options }}
+            cov-build --dir idir ${{ inputs.build_command }} ${{ inputs.cov_build_options }}
           fi
-
-      - name: Coverity Build Capture
-        if: ${{ inputs.build_command }} != ""
-        shell: bash
-        run: |
-          echo
-          echo ========================================================================================
-          echo == Run Coverity BUILD Capture: ${{ inputs.build_command }}
-          echo ========================================================================================
-          echo
-          echo EXEC: cov-build --dir idir ${{ inputs.build_command }}
-          cov-build --dir idir ${{ inputs.build_command }}
 
       # On pushes to a main branch, run a Full Coverity analysis using auto
       # capture. This will scan the filesystem to determine what kind of
@@ -137,8 +131,8 @@
           echo
           echo EXEC: COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}
-          echo EXEC: cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }}
-          cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }}
+          echo EXEC: cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }} ${{ inputs.cov_analyze_options }}
+          cov-analyze --dir idir --strip-path `pwd` ${{ inputs.coverity_checker_options }} ${{ inputs.cov_analyze_options }}
           echo EXEC: cov-commit-defects --dir idir --ticker-mode none --url ${{ inputs.coverity_url }} --on-new-cert trust --stream \
               $COVERITY_STREAM_NAME --scm git --description "GitHub Workflow $GITHUB_WORKFLOW for $GITHUB_REPO" --version $GITHUB_SHA
           cov-commit-defects --dir idir --ticker-mode none --url ${{ inputs.coverity_url }} --on-new-cert trust --stream \
@@ -191,10 +185,12 @@
           echo EXEC: cov-run-desktop --dir idir --strip-path `pwd` --url ${{ inputs.coverity_url }} --stream $COVERITY_STREAM_NAME --present-in-reference false \
             --ignore-uncapturable-inputs true \
             --json-output-v7 coverity-results.json \
+            ${{ inputs.cov_analyze_options }} \
             ${{ steps.changeset.outputs.added_modified }}
           cov-run-desktop --dir idir --strip-path `pwd` --url ${{ inputs.coverity_url }} --stream $COVERITY_STREAM_NAME --present-in-reference false \
             --ignore-uncapturable-inputs true \
             --json-output-v7 coverity-results.json \
+            ${{ inputs.cov_analyze_options }} \
             ${{ steps.changeset.outputs.added_modified }}
         env:
           BASE_BRANCH: ${{ github.base_ref }}
