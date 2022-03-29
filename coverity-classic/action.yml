@@ -316,7 +316,7 @@
       - uses: ouzi-dev/commit-status-updater@v1.1.0
         with:
           name: "Coverity Policy Check"
-          status: "${{ env.STATE_security_gate_status }}"
+          status: "${{ env.SECURITY_GATE_STATUS }}"
 
       - name: Test Param
         shell: bash
