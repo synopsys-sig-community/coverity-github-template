@@ -300,6 +300,7 @@
           cov-commit-defects --dir idir --url ${{ inputs.coverity_url }} --preview-report-v2 preview-report.json --stream ${COVERITY_STREAM_NAME}
           echo EXEC: NUM_NEW_DEFECTS=\`cat preview-report.json \| jq -re .issueInfo[].presentInComparisonSnapshot \| grep false \| wc -l\`
           NUM_NEW_DEFECTS=`cat preview-report.json | jq -re .issueInfo[].presentInComparisonSnapshot | grep false | wc -l`
+          echo TEST
           if [ "$NUM_NEW_DEFECTS" -eq 0 ]; then
             echo EXEC: echo ::save-state name=security_gate_status::success
             echo ::save-state name=security_gate_status::success
