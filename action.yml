@@ -86,7 +86,7 @@
       - name: Coverity Capture
         shell: bash
         run: |
-          if [ "${{ inputs.build_command }}" -ne "" ]; then
+          if [ "${{ inputs.build_command }}" == "" ]; then
             echo
             echo ========================================================================================
             echo == Run Coverity AUTO Capture
