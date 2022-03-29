@@ -32,6 +32,9 @@
       github_token:
         description: "GitHub Access Token"
         required: true
+      test-param:
+        description: "Test param"
+        required: false
 
     runs:
       using: "composite"
@@ -311,3 +314,8 @@
         with:
           name: "Coverity Policy Check"
           status: "${{ env.SECURITY_GATE_STATUS }}"
+
+      - name: Test Param
+        shell: bash
+        run: |
+          echo TEST PARAM: ${{ inputs.test_param }}
