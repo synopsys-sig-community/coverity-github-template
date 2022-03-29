@@ -298,9 +298,16 @@
           export COVERITY_STREAM_NAME=${GITHUB_REPOSITORY##*/}-$BASE_BRANCH
           echo EXEC: cov-commit-defects --dir idir --url ${{ inputs.coverity_url }} --preview-report-v2 preview-report.json --stream ${COVERITY_STREAM_NAME}
           cov-commit-defects --dir idir --url ${{ inputs.coverity_url }} --preview-report-v2 preview-report.json --stream ${COVERITY_STREAM_NAME}
-          echo EXEC: NUM_NEW_DEFECTS=\`cat preview-report.json \| jq -re .issueInfo[].presentInComparisonSnapshot \| grep false \| wc -l \&\& true\`
-          NUM_NEW_DEFECTS=`cat preview-report.json | jq -re .issueInfo[].presentInComparisonSnapshot | grep false | wc -l && true`
+          echo EXEC: NUM_NEW_DEFECTS=\`cat preview-report.json \| jq -re .issueInfo[].presentInComparisonSnapshot \| grep false \| wc -l \|\| true\`
+          NUM_NEW_DEFECTS=`cat preview-report.json | jq -re .issueInfo[].presentInComparisonSnapshot | grep false | wc -l || true`
           echo TEST
+          if [ "$NUM_NEW_DEFECTS" -eq 0 ]; then
+            echo EXEC: echo ::save-state name=security_gate_status::success
+            echo ::save-state name=security_gate_status::success
+          else
+            echo EXEC: echo ::save-state name=security_gate_status::failure
+            echo ::save-state name=security_gate_status::failure
+          fi
         env:
           BASE_BRANCH: ${{ github.base_ref }}
           COV_USER: ${{ inputs.coverity_user }}
