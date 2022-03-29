@@ -83,17 +83,26 @@
       # Always run either a full build or auto-capture. A partial capture is possible for incremetnal analysis,
       # but this will impact the results further. For C/C++ and large Java projects however this may be required
       # and is left as an exercise to the reader.
-      - name: Coverity Auto Capture
-        if: ${{ inputs.build_command }} == ""
+      - name: Coverity Capture
         shell: bash
         run: |
-          echo
-          echo ========================================================================================
-          echo == Run Coverity AUTO Capture
-          echo ========================================================================================
-          echo
-          echo EXEC: cov-capture --dir idir --project-dir .
-          cov-capture --dir idir --project-dir .
+          if [ "${{ inputs.build_command }}" -ne "" ]; then
+            echo
+            echo ========================================================================================
+            echo == Run Coverity AUTO Capture
+            echo ========================================================================================
+            echo
+            echo EXEC: cov-capture --dir idir --project-dir .
+            cov-capture --dir idir --project-dir .
+          else
+            echo
+            echo ========================================================================================
+            echo == Run Coverity BUILD Capture: ${{ inputs.build_command }}
+            echo ========================================================================================
+            echo
+            echo EXEC: cov-build --dir idir ${{ inputs.build_command }}
+            cov-build --dir idir ${{ inputs.build_command }}
+          fi
 
       - name: Coverity Build Capture
         if: ${{ inputs.build_command }} != ""
